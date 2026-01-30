@@ -10,4 +10,4 @@ print(bool([]))        # False
 print(bool([1, 2]))    # True 
 print(bool(None))      # False
 
-# empty / zero / None -> False, others -> True
+# empty / zero / None -> False, most others -> True
