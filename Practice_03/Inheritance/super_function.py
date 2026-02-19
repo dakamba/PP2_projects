@@ -27,7 +27,8 @@ class Student(Person):
 
 
 # Testing
-student = Student("Daulet", 17, "KazNU")
+student = Student("Daulet", 18, "KBTU")
 
 student.introduce()  # From parent
 student.study()      # From child
+
