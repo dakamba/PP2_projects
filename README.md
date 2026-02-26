@@ -1,11 +1,3 @@
-# Practice-03
+# Python Practice 4 – Iterators, Generators, Dates, Math, and JSON
 
-This repository contains Python practice examples covering:
-
-- Functions
-- Lambda expressions
-- Classes
-- Inheritance
-
-Each file includes working, tested examples with explanations.
-All scripts run without errors using Python 3.10+
+This repository contains Python exercises covering iterators, generators, date/time operations, math functions, and JSON parsing. It was created as part of the Practice 4 assignment.  
