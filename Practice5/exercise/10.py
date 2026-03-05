@@ -2,9 +2,12 @@
 
 import re
 
-def camel_to_snake(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+def camel_to_snake(text):
+    words = re.findall(r'[A-Z]?[a-z]+|[A-Z]+(?![a-z])', text)
+    return '_'.join(word.lower() for word in words)
 
-text = "camelCaseExampleTest"
-print(camel_to_snake(text))
+text1 = "camelCaseExampleTest"
+text2 = "HTMLParserTest"
+
+print(camel_to_snake(text1))  # camel_case_example_test
+print(camel_to_snake(text2))  # html_parser_test
