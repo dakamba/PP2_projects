@@ -1,3 +1,5 @@
-# Python Practice 4 – Iterators, Generators, Dates, Math, and JSON
+# Python Practice 5:
 
-This repository contains Python exercises covering iterators, generators, date/time operations, math functions, and JSON parsing. It was created as part of the Practice 4 assignment.  
+Receipt Parser
+
+A Python script to extract structured data from raw receipt text. This project reads a receipt, extracts product names, prices, total amount, date, time, and payment method, and outputs it as JSON.
