@@ -4,5 +4,7 @@ import re
 
 text = "HelloWorldThisIsPython"
 
-result = re.sub(r'(?<!^)(?=[A-Z])', ' ', text)
+words = re.findall(r'[A-Z][a-z]*', text)
+
+result = ' '.join(words)
 print(result)
