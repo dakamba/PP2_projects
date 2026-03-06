@@ -1,43 +1,53 @@
 import re
 import json
 
-# Load the raw receipt
-with open('raw.txt', 'r', encoding='utf-8') as file:
-    receipt_text = file.read()
+with open("raw.txt", "r", encoding="utf-8") as f:
+    text = f.read()
 
-# 1️⃣ Extract all prices (handle spaces and comma as decimal)
-price_pattern = re.compile(r'(\d{1,3}(?: \d{3})*,\d{2})')
-prices_raw = price_pattern.findall(receipt_text)
-# Convert to float
-prices = [float(p.replace(' ', '').replace(',', '.')) for p in prices_raw]
+# Product block regex
+pattern = re.compile(
+    r'\d+\.\s*\n'                       # item number
+    r'(.+?)\n'                          # product name
+    r'([\d,]+)\s*x\s*([\d\s]+,\d{2})\n' # quantity x price
+    r'([\d\s]+,\d{2})',                 # total
+    re.S
+)
 
-# 2️⃣ Extract product names
-# Product lines start with a number + dot + name, then quantity x price
-product_pattern = re.compile(r'\d+\.\s+(.+?)\n\d+,\d+ x \d{1,3}(?: \d{3})*,\d{2}', re.MULTILINE)
-products = product_pattern.findall(receipt_text)
+products = []
 
-# 3️⃣ Calculate total amount
-total_amount = sum(prices)
+for match in pattern.finditer(text):
+    name = match.group(1).strip()
+    quantity = float(match.group(2).replace(',', '.'))
+    price = float(match.group(3).replace(' ', '').replace(',', '.'))
+    total = float(match.group(4).replace(' ', '').replace(',', '.'))
 
-# 4️⃣ Extract date and time
-datetime_pattern = re.compile(r'Время:\s*(\d{2}\.\d{2}\.\d{4})\s*(\d{2}:\d{2}:\d{2})')
-datetime_match = datetime_pattern.search(receipt_text)
-date, time = (datetime_match.group(1), datetime_match.group(2)) if datetime_match else (None, None)
+    products.append({
+        "name": name,
+        "quantity": quantity,
+        "price": price,
+        "total": total
+    })
 
-# 5️⃣ Extract payment method
-payment_pattern = re.compile(r'Банковская карта|CASH|CREDIT|DEBIT', re.IGNORECASE)
-payment_match = payment_pattern.search(receipt_text)
-payment_method = payment_match.group(0) if payment_match else None
+# Total receipt amount
+total_pattern = re.search(r'ИТОГО:\s*\n?([\d\s]+,\d{2})', text)
+total_amount = None
+if total_pattern:
+    total_amount = float(total_pattern.group(1).replace(' ', '').replace(',', '.'))
 
-# 6️⃣ Structured output
+# Date and time
+datetime_pattern = re.search(r'Время:\s*(\d{2}\.\d{2}\.\d{4})\s*(\d{2}:\d{2}:\d{2})', text)
+date, time = (datetime_pattern.group(1), datetime_pattern.group(2)) if datetime_pattern else (None, None)
+
+# Payment method
+payment_pattern = re.search(r'Банковская карта', text, re.IGNORECASE)
+payment_method = payment_pattern.group(0) if payment_pattern else None
+
 parsed_receipt = {
     "products": products,
-    "prices": prices,
     "total_amount": total_amount,
     "date": date,
     "time": time,
     "payment_method": payment_method
 }
 
-# Print formatted JSON
 print(json.dumps(parsed_receipt, indent=4, ensure_ascii=False))
