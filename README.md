@@ -1,5 +1,9 @@
-# Python Practice 5:
+# Practice6
 
-Receipt Parser
+Examples of exercises for file handling, directory management, and Python built-in functions.
 
-A Python script to extract structured data from raw receipt text. This project reads a receipt, extracts product names, prices, total amount, date, time, and payment method, and outputs it as JSON.
+## Contents
+
+- **file_handling/** — create, read, copy, and delete files.
+- **directory_management/** — create directories, move files, list files.
+- **builtin_functions/** — examples of map, filter, reduce, enumerate, and zip.
