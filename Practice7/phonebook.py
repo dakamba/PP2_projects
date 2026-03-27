@@ -70,7 +70,7 @@ def delete_contact(identifier):
     with conn.cursor() as cur:
         cur.execute("DELETE FROM contacts WHERE first_name = %s OR phone_number = %s", (identifier, identifier))
         conn.commit()
-        print(f"Deleted {cur.rowcount} record(s).")
+        print(f"Deleted.")
     conn.close()
 
 if __name__ == "__main__":
