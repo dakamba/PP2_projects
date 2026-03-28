@@ -1,4 +1,4 @@
 host = "localhost"
-database = "phonebook_db"
-user = "user_name"
-password = "passwords" 
+database = "postgres" 
+user = "postgres"      
+password = "532906rmd" 
