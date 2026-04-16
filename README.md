@@ -1,9 +1,17 @@
-# Practice6
+# Pygame Practice Project
 
-Examples of exercises for file handling, directory management, and Python built-in functions.
+This repository contains three classic applications developed using the Pygame library as part of the Game Development practice.
 
-## Contents
+## Project Structure
+- **mickeys_clock/**: A Mickey Mouse themed digital-style clock.
+- **music_player/**: An interactive music player with keyboard controls.
+- **moving_ball/**: A simple game to practice movement and boundary logic.
 
-- **file_handling/** — create, read, copy, and delete files.
-- **directory_management/** — create directories, move files, list files.
-- **builtin_functions/** — examples of map, filter, reduce, enumerate, and zip.
+## Prerequisites
+- Python 3.x
+- Pygame library
+
+## Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/dakamba/PP2_projects.git
