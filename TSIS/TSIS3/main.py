@@ -5,6 +5,10 @@ import random
 from ui import Button, load_car_sprites
 from racer import *
 from persistence import load_settings, save_settings, save_score, load_leaderboard
+import os
+
+# Получаем абсолютный путь к папке, где лежит main.py
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # --- ИНИЦИАЛИЗАЦИЯ ДВИЖКА ---
 pygame.init() # Запуск всех модулей Pygame
@@ -14,13 +18,12 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 # Установка заголовка окна (полезно для идентификации проекта)
-pygame.display.set_caption("KBTU Racer - TSIS 3")
+pygame.display.set_caption("Racer Game - TSIS 3")
 
 # Объект для контроля частоты кадров (FPS)
 clock = pygame.time.Clock()
 
 # Списки доступных названий ассетов (машин и фонов дорог)
-# Они должны совпадать с названиями файлов в папке assets
 CARS = ["Player_blue", "Player_green", "Player_red", "Player_yellow", "Police"]
 ROADS = ["Summer", "Winter", "Desert", "Highway"]
 
@@ -40,10 +43,9 @@ def update_game_assets():
     c_type = settings.get("car_type", "Player_blue")
     
     try:
-        # У дорог разный формат названий файлов в зависимости от типа
-        # Highway имеет разрешение 96x64, остальные 64x64
+        #Получаем название файла для дорог
         size_str = "(96 x 64)" if r_type == "Highway" else "(64 x 64)"
-        road_path = f"assets/Levels/{r_type}_road {size_str}.png"
+        road_path = os.path.join(BASE_PATH, "assets", "Levels", f"{r_type}_road {size_str}.png")
         
         # Загружаем изображение дороги и оптимизируем для работы с прозрачностью
         road = pygame.image.load(road_path).convert_alpha()
@@ -51,7 +53,7 @@ def update_game_assets():
         road = pygame.transform.scale(road, (WIDTH, HEIGHT))
         
         # Формируем путь к спрайту машины и загружаем его через вспомогательную функцию
-        car_path = f"assets/Cars/{c_type}.png" 
+        car_path = os.path.join(BASE_PATH, "assets", "Cars", f"{c_type}.png")
         car = load_car_sprites(car_path, 5) # 5 — количество кадров в анимации/спрайте
         
     except Exception as e:
@@ -109,6 +111,7 @@ def username_screen():
                     
         pygame.display.flip() # Обновляем экран
         clock.tick(60)        # Ограничиваем цикл до 60 FPS
+
 
 def leaderboard_screen():
     """
@@ -168,58 +171,86 @@ def leaderboard_screen():
         pygame.display.flip()
         clock.tick(60)
 
+
 def settings_screen():
-    """НАСТРОЙКИ: МАШИНА, КАРТА, ДИСТАНЦИЯ И СЛОЖНОСТЬ"""
+    """
+    ЭКРАН НАСТРОЕК: ПОЗВОЛЯЕТ ИЗМЕНЯТЬ ПАРАМЕТРЫ МАШИНЫ, КАРТЫ, ЦЕЛИ И СЛОЖНОСТИ.
+    """
+    # Используем глобальные переменные, чтобы изменения применились ко всей игре сразу
     global settings, road_img, car_sprites
     
-    # Список для отображения названий сложностей
+    # Список для текстового отображения уровней сложности
     DIFFICULTIES = ["Easy", "Medium", "Hard"]
     
+    # Получаем текущие индексы из настроек, чтобы знать, на чем остановился пользователь
+    # .index() находит позицию текущего элемента в списках CARS и ROADS
     car_idx = CARS.index(settings.get("car_type", "Player_blue"))
     road_idx = ROADS.index(settings.get("road_type", "Summer"))
     dist_val = settings.get("finish_distance", 1000)
     diff_idx = settings.get("difficulty", 1) 
 
-    # Создаем кнопки (координаты подогнаны под экран 800x600)
+    # Инициализация кнопок переключения (координата X=550 выравнивает их в один ряд справа)
     btn_next_car = Button(">", 550, 150, 50, 40, (100, 100, 100), (150, 150, 150))
     btn_next_road = Button(">", 550, 220, 50, 40, (100, 100, 100), (150, 150, 150))
     btn_next_dist = Button(">", 550, 290, 50, 40, (100, 100, 100), (150, 150, 150))
     btn_next_diff = Button(">", 550, 360, 50, 40, (100, 100, 100), (150, 150, 150))
+    
+    # Кнопка сохранения (находится внизу по центру WIDTH//2 - 100)
     btn_save = Button("SAVE & BACK", WIDTH//2 - 100, 480, 200, 50, (46, 204, 113), (39, 174, 96))
 
     font = pygame.font.SysFont("Impact", 30)
 
     while True:
-        screen.fill((30, 30, 30))
-        # Отрисовка текущих значений
+        screen.fill((30, 30, 30)) # Темно-серый фон окна настроек
+        
+        # Отрисовка текущих выбранных значений на экране
+        # Каждое значение выводится слева от соответствующей кнопки
         screen.blit(font.render(f"CAR: {CARS[car_idx]}", True, (255, 255, 255)), (200, 155))
         screen.blit(font.render(f"MAP: {ROADS[road_idx]}", True, (255, 255, 255)), (200, 225))
         screen.blit(font.render(f"GOAL: {dist_val} m", True, (255, 255, 255)), (200, 295))
         screen.blit(font.render(f"DIFF: {DIFFICULTIES[diff_idx]}", True, (255, 255, 255)), (200, 365))
 
+        # Отрисовка всех кнопок из списка
         for b in [btn_next_car, btn_next_road, btn_next_dist, btn_next_diff, btn_save]: 
             b.draw(screen)
         
+        # Обработка событий
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+            if event.type == pygame.QUIT: 
+                pygame.quit(); sys.exit()
             
-            if btn_next_car.is_clicked(event): car_idx = (car_idx + 1) % len(CARS)
-            if btn_next_road.is_clicked(event): road_idx = (road_idx + 1) % len(ROADS)
+            # Логика циклического переключения индексов через оператор % (остаток от деления)
+            if btn_next_car.is_clicked(event): 
+                car_idx = (car_idx + 1) % len(CARS)
+            
+            if btn_next_road.is_clicked(event): 
+                road_idx = (road_idx + 1) % len(ROADS)
+            
+            # Логика выбора дистанции (увеличиваем на 500, сбрасываем после 5000)
             if btn_next_dist.is_clicked(event): 
                 dist_val = 500 if dist_val >= 5000 else dist_val + 500
+            
+            # Переключение сложности (0 -> 1 -> 2 -> 0)
             if btn_next_diff.is_clicked(event):
-                diff_idx = (diff_idx + 1) % 3 # Переключение 0, 1, 2
+                diff_idx = (diff_idx + 1) % 3 
                 
+            # Сохранение и выход
             if btn_save.is_clicked(event):
+                # Обновляем словарь настроек новыми значениями
                 settings.update({
                     "car_type": CARS[car_idx], 
                     "road_type": ROADS[road_idx], 
                     "finish_distance": dist_val,
                     "difficulty": diff_idx
                 })
+                # Записываем изменения в физический файл settings.json
                 save_settings(settings)
-                road_img, car_sprites = update_game_assets() # Обновляем картинки
-                return
+                
+                # ВАЖНО: Перезагружаем изображения, чтобы изменения применились сразу
+                road_img, car_sprites = update_game_assets() 
+                
+                return # Выходим из функции настроек обратно в меню
+        
         pygame.display.flip()
         clock.tick(60)
 
@@ -354,7 +385,7 @@ def game_loop():
         coin_hits = pygame.sprite.spritecollide(player, coins, True)
         for c in coin_hits:
             collected_coins += c.value
-            base_speed += 0.05 # ДИНАМИЧЕСКАЯ СЛОЖНОСТЬ: игра ускоряется от монет
+            base_speed += 0.1 # ДИНАМИЧЕСКАЯ СЛОЖНОСТЬ: игра ускоряется от монет
             ui_effects.add(FloatingText(player.rect.centerx, player.rect.top, f"+{c.value}", (255, 215, 0)))
 
         # 2. Столкновение с предметами (масло, нитро, щит, барьер)
@@ -417,25 +448,61 @@ def game_loop():
         pygame.display.flip() # Смена буфера кадра (вывод на монитор)
 
 def main_menu():
+    """
+    ГЛАВНОЕ МЕНЮ: ТОЧКА ВХОДА В ИГРУ.
+    Обеспечивает навигацию между игровым процессом, рекордами и настройками.
+    """
+    # Инициализация кнопок меню. 
+    # Параметры: Текст, X, Y, Ширина, Высота, Основной цвет, Цвет при наведении.
     btn_play = Button("START RACE", 50, 220, 260, 55, (41, 128, 185), (31, 97, 141))
     btn_lead = Button("LEADERBOARD", 50, 285, 260, 55, (241, 196, 15), (212, 172, 13))
     btn_sett = Button("SETTINGS", 50, 350, 260, 55, (41, 128, 185), (31, 97, 141))
     btn_exit = Button("EXIT", 50, 415, 260, 55, (192, 57, 43), (146, 43, 33))
 
-    scroll = 0
+    scroll = 0 # Переменная для хранения смещения анимированного фона
+    
     while True:
+        # ЭФФЕКТ ДВИЖЕНИЯ: Сдвигаем фон вниз на 3 пикселя каждый кадр.
+        # Использование % HEIGHT позволяет фону бесконечно "зацикливаться".
         scroll = (scroll + 3) % HEIGHT
         draw_background(screen, road_img, scroll, HEIGHT)
-        screen.blit(pygame.font.SysFont("Impact", 80).render("Racer Game", True, (255, 215, 0)), (50, 80))
-        for b in [btn_play, btn_lead, btn_sett, btn_exit]: b.draw(screen)
+        
+        # Отрисовка названия игры с использованием шрифта Impact и золотистого цвета
+        title_surf = pygame.font.SysFont("Impact", 80).render("Racer Game", True, (255, 215, 0))
+        screen.blit(title_surf, (50, 80))
+        
+        # Отрисовываем все кнопки меню на текущем кадре
+        for b in [btn_play, btn_lead, btn_sett, btn_exit]: 
+            b.draw(screen)
+        
+        # ОБРАБОТКА СОБЫТИЙ МЕНЮ
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: pygame.quit(); sys.exit()
-            if btn_play.is_clicked(event): username_screen(); game_loop()
-            if btn_lead.is_clicked(event): leaderboard_screen()
-            if btn_sett.is_clicked(event): settings_screen()
-            if btn_exit.is_clicked(event): pygame.quit(); sys.exit()
+            if event.type == pygame.QUIT: 
+                pygame.quit(); sys.exit()
+            
+            # Если нажата "PLAY": сначала идем на экран ввода имени, потом в саму игру
+            if btn_play.is_clicked(event): 
+                username_screen() 
+                game_loop()
+            
+            # Переход к таблице рекордов
+            if btn_lead.is_clicked(event): 
+                leaderboard_screen()
+            
+            # Переход в меню настроек
+            if btn_sett.is_clicked(event): 
+                settings_screen()
+            
+            # Полный выход из приложения
+            if btn_exit.is_clicked(event): 
+                pygame.quit(); sys.exit()
+        
+        # Обновляем дисплей для отображения изменений
         pygame.display.flip()
+        # Поддерживаем стабильные 60 кадров в секунду (плавность анимации)
         clock.tick(60)
 
+# ТОЧКА ВХОДА В ПРОГРАММУ
+# Это условие гарантирует, что меню запустится только при прямом запуске main.py
 if __name__ == "__main__":
     main_menu()
